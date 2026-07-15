@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from 'react';
-import { Mail, Phone, ExternalLink, Calendar, Send, CheckCircle, AlertCircle, Instagram, Linkedin, Youtube, Twitter, Github } from 'lucide-react';
+import { Mail, Phone, ExternalLink, Calendar, Send, CheckCircle, Instagram, Linkedin, Youtube, Twitter, Github } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function Contact() {
@@ -18,75 +18,46 @@ export default function Contact() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
+  e.preventDefault();
 
-    if (!formData.name || !formData.email) {
-      setErrorMessage("Please fill out the required Name and Email fields.");
-      return;
-    }
+  if (!formData.name || !formData.email) {
+    alert("Please fill out the required Name and Email fields.");
+    return;
+  }
 
-    setIsSubmitting(true);
+  setIsSubmitting(true);
 
-    try {
-      const scriptURL = "https://script.google.com/macros/s/AKfycbwbBafnYT99UtpstpA7D76fhD4lE7Mye9AK4oEnrbtThFPGLCNuxH-mcS9x1HIH4nY9/exec";
-
-      const categoryLabels: Record<string, string> = {
-        youtube: 'YouTube Longform',
-        reels: 'TikTok / Reels / Shorts',
-        gaming: 'Gaming Highlight',
-        documentary: 'Cinematic Documentary',
-        commercial: 'Commercial Campaign',
-        corporate: 'Corporate Promo'
-      };
-
-      const payload = {
-        // camelCase format fields for API compatibility
-        name: formData.name,
-        email: formData.email,
-        channelType: formData.channelType,
-        footageUrl: formData.footageUrl,
-        message: formData.message,
-        // Google Sheet headers matched exactly to columns
-        "Name": formData.name,
-        "Email": formData.email,
-        "Deliverable Category": categoryLabels[formData.channelType] || formData.channelType,
-        "Footage URL": formData.footageUrl,
-        "Message": formData.message,
-        "Submission Date & Time": new Date().toLocaleString('en-US', { timeZoneName: 'short' }),
-      };
-
-      // Perform a robust, CORS-safe POST submission to the Google Apps Script endpoint
-      await fetch(scriptURL, {
+  try {
+    await fetch(
+      "https://script.google.com/macros/s/AKfycbwbBafnYT99UtpstpA7D76fhD4lE7Mye9AK4oEnrbtThFPGLCNuxH-mcS9x1HIH4nY9/exec",
+      {
         method: "POST",
-        mode: "no-cors", // Crucial for preventing browser redirect CORS blockage from script.google.com
+        redirect: "follow",
         headers: {
           "Content-Type": "text/plain;charset=utf-8",
         },
-        body: JSON.stringify(payload),
-      });
+        body: JSON.stringify(formData),
+      }
+    );
 
-      // Show success animation state
-      setIsSuccess(true);
+    setIsSuccess(true);
 
-      // Reset form variables upon successful submission
-      setFormData({
-        name: "",
-        email: "",
-        channelType: "youtube",
-        footageUrl: "",
-        message: "",
-      });
-    } catch (error) {
-      console.error("Submission error details:", error);
-      setErrorMessage("Failed to submit. Please check your network connection and try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    setFormData({
+      name: "",
+      email: "",
+      channelType: "youtube",
+      footageUrl: "",
+      message: "",
+    });
+  } catch (error) {
+    console.error(error);
+    alert("Failed to submit form.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <section
@@ -318,18 +289,6 @@ export default function Contact() {
                       placeholder="Tell us about your visual pacing goals, raw footage count, revision requirements, or timeline deadlines..."
                     />
                   </div>
-
-                  {/* Inline Error Message Banner */}
-                  {errorMessage && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-200 text-xs font-sans flex items-center gap-3"
-                    >
-                      <AlertCircle className="w-5 h-5 text-red-500 shrink-0" />
-                      <span>{errorMessage}</span>
-                    </motion.div>
-                  )}
 
                   {/* Submit Button */}
                   <button
